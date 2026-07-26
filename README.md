@@ -1,6 +1,6 @@
 # ATM CLI Simulation
 
-A clean, extensible, production-grade Command-Line Interface (CLI) simulation of a retail bank ATM, implemented in **Java 21** (fully compatible up to **Java 25**) using **Hexagonal Architecture (Ports & Adapters)** and the **Command Pattern**.
+A clean, extensible, production-grade Command-Line Interface (CLI) simulation of a retail bank ATM, implemented in **Java 21** (fully compatible up to **Java 25**) using a **Layered Architecture** and the **Command Pattern**.
 
 ---
 
