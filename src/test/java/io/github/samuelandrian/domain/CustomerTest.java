@@ -93,4 +93,78 @@ class CustomerTest {
     assertNull(bob.getDebts().get("Alice"));
     assertEquals(BigDecimal.ZERO, bob.getBalance());
   }
+
+  @Test
+  void testAddAndReduceDebtEdgeCases() {
+    Customer customer = Customer.builder().name("Bob").build();
+    // Negative add debt
+    customer.addDebt("Alice", new BigDecimal("-10.00"));
+    assertTrue(customer.getDebts().isEmpty());
+
+    // Zero add debt
+    customer.addDebt("Alice", BigDecimal.ZERO);
+    assertTrue(customer.getDebts().isEmpty());
+
+    // Negative reduce debt
+    customer.addDebt("Alice", BigDecimal.TEN);
+    customer.reduceDebt("Alice", new BigDecimal("-5.00"));
+    assertEquals(BigDecimal.TEN, customer.getDebts().get("Alice"));
+
+    // Zero reduce debt
+    customer.reduceDebt("Alice", BigDecimal.ZERO);
+    assertEquals(BigDecimal.TEN, customer.getDebts().get("Alice"));
+  }
+
+  @Test
+  void testReceiveMoneyEdgeCases() {
+    Customer bob = Customer.builder().name("Bob").build();
+    // Negative or zero receive money
+    assertTrue(bob.receiveMoney(new BigDecimal("-10.00"), repository).isEmpty());
+    assertTrue(bob.receiveMoney(BigDecimal.ZERO, repository).isEmpty());
+  }
+
+  @Test
+  void testReceiveMoneyAutoCreatesCreditor() {
+    Customer bob = Customer.builder().name("Bob").build();
+    repository.save(bob);
+
+    // Bob owes Alice (Alice is NOT in repository)
+    bob.addDebt("Alice", BigDecimal.TEN);
+
+    // Bob receives 10
+    List<Repayment> repayments = bob.receiveMoney(BigDecimal.TEN, repository);
+    assertEquals(1, repayments.size());
+    assertEquals("Alice", repayments.get(0).getTo());
+    assertEquals(BigDecimal.TEN, repayments.get(0).getAmount());
+
+    // Verify Alice was auto-created in repo and received the money
+    assertTrue(repository.findByName("Alice").isPresent());
+    assertEquals(0, BigDecimal.TEN.compareTo(repository.findByName("Alice").get().getBalance()));
+  }
+
+  @Test
+  void testCyclicDebtDetection() {
+    Customer a = Customer.builder().name("A").build();
+    Customer b = Customer.builder().name("B").build();
+    Customer c = Customer.builder().name("C").build();
+
+    repository.save(a);
+    repository.save(b);
+    repository.save(c);
+
+    a.addDebt("B", BigDecimal.TEN);
+    b.addDebt("C", BigDecimal.TEN);
+    c.addDebt("A", BigDecimal.TEN);
+
+    List<Repayment> repayments = a.receiveMoney(BigDecimal.TEN, repository);
+
+    // A repaid B 10
+    assertEquals(1, repayments.size());
+    assertEquals("B", repayments.get(0).getTo());
+    assertEquals(BigDecimal.TEN, repayments.get(0).getAmount());
+
+    // A should have received 10 back via C because of the cyclic debt loop
+    Customer updatedA = repository.findByName("A").orElseThrow();
+    assertEquals(0, BigDecimal.TEN.compareTo(updatedA.getBalance()));
+  }
 }
