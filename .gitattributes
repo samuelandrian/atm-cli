@@ -1,0 +1,2 @@
+# Ensure start.sh always uses LF line endings (required for executing on Unix environments)
+start.sh text eol=lf
