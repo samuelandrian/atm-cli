@@ -49,4 +49,28 @@ class AtmServiceTest {
     atmService.withdraw(new BigDecimal("30.00"));
     assertEquals(0, new BigDecimal("70.00").compareTo(alice.getBalance()));
   }
+
+  @Test
+  void testInvalidDeposit() {
+    authService.login("Alice");
+    assertThrows(RuntimeException.class, () -> atmService.deposit(new BigDecimal("-10.00")));
+    assertThrows(RuntimeException.class, () -> atmService.deposit(BigDecimal.ZERO));
+  }
+
+  @Test
+  void testTransferValidations() {
+    authService.login("Alice");
+
+    // Self transfer error
+    assertThrows(RuntimeException.class, () -> atmService.transfer("Alice", BigDecimal.TEN));
+
+    // Empty target error
+    assertThrows(RuntimeException.class, () -> atmService.transfer(null, BigDecimal.TEN));
+    assertThrows(RuntimeException.class, () -> atmService.transfer("   ", BigDecimal.TEN));
+
+    // Valid transfer to a non-existent user Bob (should auto-create Bob)
+    atmService.deposit(new BigDecimal("50.00"));
+    assertNotNull(atmService.transfer("Bob", new BigDecimal("30.00")));
+    assertTrue(repository.findByName("Bob").isPresent());
+  }
 }

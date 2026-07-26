@@ -59,4 +59,21 @@ class AuthServiceTest {
     assertFalse(authService.isLoggedIn());
     assertThrows(CustomerNotLoggedInException.class, authService::getLoggedInCustomer);
   }
+
+  @Test
+  void testLoginValidationAndDuplicates() {
+    // Empty / null login
+    assertThrows(RuntimeException.class, () -> authService.login(null));
+    assertThrows(RuntimeException.class, () -> authService.login("   "));
+
+    // Login Alice
+    Customer c1 = authService.login("Alice");
+
+    // Login Alice again (should succeed and return same customer)
+    Customer c2 = authService.login("Alice");
+    assertEquals(c1, c2);
+
+    // Login Bob while Alice is logged in (should fail)
+    assertThrows(RuntimeException.class, () -> authService.login("Bob"));
+  }
 }

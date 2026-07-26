@@ -94,4 +94,27 @@ class TransferServiceTest {
         new BigDecimal("10.00"),
         bob.getDebts().get("Alice")); // Bob's debt to Alice is reduced to 10
   }
+
+  @Test
+  void testTransferValidationExceptions() {
+    Customer alice = Customer.builder().name("Alice").build();
+    Customer bob = Customer.builder().name("Bob").build();
+    repository.save(alice);
+    repository.save(bob);
+
+    // Negative transfer
+    assertThrows(
+        RuntimeException.class,
+        () -> transferService.transfer(alice, bob, new BigDecimal("-10.00"), repository));
+
+    // Zero transfer
+    assertThrows(
+        RuntimeException.class,
+        () -> transferService.transfer(alice, bob, BigDecimal.ZERO, repository));
+
+    // Self transfer
+    assertThrows(
+        RuntimeException.class,
+        () -> transferService.transfer(alice, alice, BigDecimal.TEN, repository));
+  }
 }

@@ -1,10 +1,10 @@
 package io.github.samuelandrian.cli;
 
 import io.github.samuelandrian.application.DebtInfo;
+import io.github.samuelandrian.cli.enums.CommandType;
 import io.github.samuelandrian.domain.model.Customer;
 import io.github.samuelandrian.domain.model.Repayment;
 import io.github.samuelandrian.domain.service.TransferResult;
-import io.github.samuelandrian.cli.enums.CommandType;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -29,13 +29,13 @@ public class AtmCommandParserImpl implements AtmCommandParser {
 
     CommandType commandType = commandTypeOpt.get();
 
-    switch (commandType) {
-      case LOGIN:
+    return switch (commandType) {
+      case LOGIN -> {
         if (tokens.length != 2) {
-          return (authService, atmService) -> CommandResult.error("Error: Usage: login [name]");
+          yield (authService, atmService) -> CommandResult.error("Error: Usage: login [name]");
         }
         String loginName = tokens[1];
-        return (authService, atmService) -> {
+        yield (authService, atmService) -> {
           Customer customer = authService.login(loginName);
           StringBuilder sb = new StringBuilder();
           sb.append("Hello, ").append(customer.getName()).append("!\n");
@@ -59,14 +59,15 @@ public class AtmCommandParserImpl implements AtmCommandParser {
 
           return CommandResult.success(sb.toString());
         };
+      }
 
-      case DEPOSIT:
+      case DEPOSIT -> {
         if (tokens.length != 2) {
-          return (authService, atmService) -> CommandResult.error("Error: Usage: deposit [amount]");
+          yield (authService, atmService) -> CommandResult.error("Error: Usage: deposit [amount]");
         }
         try {
           BigDecimal depositAmount = new BigDecimal(tokens[1]);
-          return (authService, atmService) -> {
+          yield (authService, atmService) -> {
             List<Repayment> repayments = atmService.deposit(depositAmount);
             Customer customer = authService.getLoggedInCustomer();
             StringBuilder sb = new StringBuilder();
@@ -89,17 +90,17 @@ public class AtmCommandParserImpl implements AtmCommandParser {
             return CommandResult.success(sb.toString());
           };
         } catch (NumberFormatException e) {
-          return (authService, atmService) -> CommandResult.error("Error: Invalid deposit amount.");
+          yield (authService, atmService) -> CommandResult.error("Error: Invalid deposit amount.");
         }
+      }
 
-      case WITHDRAW:
+      case WITHDRAW -> {
         if (tokens.length != 2) {
-          return (authService, atmService) ->
-              CommandResult.error("Error: Usage: withdraw [amount]");
+          yield (authService, atmService) -> CommandResult.error("Error: Usage: withdraw [amount]");
         }
         try {
           BigDecimal withdrawAmount = new BigDecimal(tokens[1]);
-          return (authService, atmService) -> {
+          yield (authService, atmService) -> {
             atmService.withdraw(withdrawAmount);
             Customer customer = authService.getLoggedInCustomer();
             StringBuilder sb = new StringBuilder();
@@ -115,19 +116,19 @@ public class AtmCommandParserImpl implements AtmCommandParser {
             return CommandResult.success(sb.toString());
           };
         } catch (NumberFormatException e) {
-          return (authService, atmService) ->
-              CommandResult.error("Error: Invalid withdraw amount.");
+          yield (authService, atmService) -> CommandResult.error("Error: Invalid withdraw amount.");
         }
+      }
 
-      case TRANSFER:
+      case TRANSFER -> {
         if (tokens.length != 3) {
-          return (authService, atmService) ->
+          yield (authService, atmService) ->
               CommandResult.error("Error: Usage: transfer [target] [amount]");
         }
         String target = tokens[1];
         try {
           BigDecimal transferAmount = new BigDecimal(tokens[2]);
-          return (authService, atmService) -> {
+          yield (authService, atmService) -> {
             TransferResult res = atmService.transfer(target, transferAmount);
             Customer customer = authService.getLoggedInCustomer();
             StringBuilder sb = new StringBuilder();
@@ -162,37 +163,26 @@ public class AtmCommandParserImpl implements AtmCommandParser {
             return CommandResult.success(sb.toString());
           };
         } catch (NumberFormatException e) {
-          return (authService, atmService) ->
-              CommandResult.error("Error: Invalid transfer amount.");
+          yield (authService, atmService) -> CommandResult.error("Error: Invalid transfer amount.");
         }
+      }
 
-      case LOGOUT:
+      case LOGOUT -> {
         if (tokens.length != 1) {
-          return (authService, atmService) -> CommandResult.error("Error: Usage: logout");
+          yield (authService, atmService) -> CommandResult.error("Error: Usage: logout");
         }
-        return (authService, atmService) -> {
+        yield (authService, atmService) -> {
           String name = authService.logout();
           return CommandResult.success("Goodbye, " + name + "!");
         };
-
-      default:
-        return (authService, atmService) ->
-            CommandResult.error(
-                "Error: Invalid command. Supported commands are: login, deposit, withdraw, transfer, logout.");
-    }
+      }
+    };
   }
 
   private static String formatMoney(BigDecimal amount) {
-    if (amount == null) {
-      return "0";
-    }
     if (amount.compareTo(BigDecimal.ZERO) == 0) {
       return "0";
     }
-    BigDecimal stripped = amount.stripTrailingZeros();
-    if (stripped.scale() <= 0) {
-      return stripped.toPlainString();
-    }
-    return stripped.toPlainString();
+    return amount.stripTrailingZeros().toPlainString();
   }
 }
