@@ -63,6 +63,9 @@ atm-cli
     │                   │       Command.java
     │                   │       CommandResult.java
     │                   │
+    │                   │       └───enums
+    │                   │               CommandType.java
+    │                   │
     │                   ├───application
     │                   │       AtmService.java (interface)
     │                   │       AtmServiceImpl.java (impl)

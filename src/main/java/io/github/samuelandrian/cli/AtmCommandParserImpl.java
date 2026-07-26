@@ -4,8 +4,10 @@ import io.github.samuelandrian.application.DebtInfo;
 import io.github.samuelandrian.domain.model.Customer;
 import io.github.samuelandrian.domain.model.Repayment;
 import io.github.samuelandrian.domain.service.TransferResult;
+import io.github.samuelandrian.cli.enums.CommandType;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public class AtmCommandParserImpl implements AtmCommandParser {
 
@@ -16,10 +18,19 @@ public class AtmCommandParserImpl implements AtmCommandParser {
     }
 
     String[] tokens = inputLine.trim().split("\\s+");
-    String commandName = tokens[0].toLowerCase();
+    String firstToken = tokens[0];
 
-    switch (commandName) {
-      case "login":
+    Optional<CommandType> commandTypeOpt = CommandType.fromKeyword(firstToken);
+    if (commandTypeOpt.isEmpty()) {
+      return (authService, atmService) ->
+          CommandResult.error(
+              "Error: Invalid command. Supported commands are: login, deposit, withdraw, transfer, logout.");
+    }
+
+    CommandType commandType = commandTypeOpt.get();
+
+    switch (commandType) {
+      case LOGIN:
         if (tokens.length != 2) {
           return (authService, atmService) -> CommandResult.error("Error: Usage: login [name]");
         }
@@ -49,7 +60,7 @@ public class AtmCommandParserImpl implements AtmCommandParser {
           return CommandResult.success(sb.toString());
         };
 
-      case "deposit":
+      case DEPOSIT:
         if (tokens.length != 2) {
           return (authService, atmService) -> CommandResult.error("Error: Usage: deposit [amount]");
         }
@@ -81,7 +92,7 @@ public class AtmCommandParserImpl implements AtmCommandParser {
           return (authService, atmService) -> CommandResult.error("Error: Invalid deposit amount.");
         }
 
-      case "withdraw":
+      case WITHDRAW:
         if (tokens.length != 2) {
           return (authService, atmService) ->
               CommandResult.error("Error: Usage: withdraw [amount]");
@@ -108,7 +119,7 @@ public class AtmCommandParserImpl implements AtmCommandParser {
               CommandResult.error("Error: Invalid withdraw amount.");
         }
 
-      case "transfer":
+      case TRANSFER:
         if (tokens.length != 3) {
           return (authService, atmService) ->
               CommandResult.error("Error: Usage: transfer [target] [amount]");
@@ -155,7 +166,7 @@ public class AtmCommandParserImpl implements AtmCommandParser {
               CommandResult.error("Error: Invalid transfer amount.");
         }
 
-      case "logout":
+      case LOGOUT:
         if (tokens.length != 1) {
           return (authService, atmService) -> CommandResult.error("Error: Usage: logout");
         }
