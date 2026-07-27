@@ -12,6 +12,38 @@ To build and run this application, you need the following software installed on 
 
 ---
 
+## Submission & Packaging
+
+This project can be packaged and shared as either a **Git Bundle** (retaining full commit history) or a standard **ZIP Archive**.
+
+### 1. Packaging the Project (For the Candidate)
+To package the repository for submission, run one of the following commands in the root directory:
+* **Option A: Create Git Bundle** (preserves commit branches and history):
+  ```bash
+  git bundle create atm-cli.bundle HEAD master
+  ```
+* **Option B: Create ZIP Archive** (exports files at HEAD):
+  ```bash
+  git archive -o atm-cli.zip HEAD
+  ```
+
+### 2. Restoring the Project (For the Reviewer)
+To restore and enter the repository folder depending on the format you received:
+* **Option A: From Git Bundle**:
+  Clone the bundle directly into a new project directory:
+  ```bash
+  git clone atm-cli.bundle -b master atm-cli
+  cd atm-cli
+  ```
+* **Option B: From ZIP Archive**:
+  Unzip the archive and enter the root directory:
+  ```bash
+  unzip atm-cli.zip -d atm-cli
+  cd atm-cli
+  ```
+
+---
+
 ## Installation
 
 1. **Extract or Clone the Repository**:
@@ -223,23 +255,23 @@ target/site/jacoco/index.html
 
 This application is structured as a clean, production-grade backend divided into **4 logical layers** to ensure high maintainability, separation of concerns, and ease of testing.
 
-### 1. Presentation Layer (CLI)
+### Presentation Layer (CLI)
 * **What it does**: The "face" of the application. It is responsible for reading user keystrokes from the terminal, translating text inputs into Command objects, and printing formatted success/error messages back to the screen.
 * **Core Classes**: [AtmConsoleImpl](file:///C:/Users/samuel/Documents/repository/personal/dkatalis/atm-cli/src/main/java/io/github/samuelandrian/cli/AtmConsoleImpl.java), [AtmCommandParserImpl](file:///C:/Users/samuel/Documents/repository/personal/dkatalis/atm-cli/src/main/java/io/github/samuelandrian/cli/AtmCommandParserImpl.java).
 
-### 2. Application Layer (Workflows & Session Orchestration)
+### Application Layer (Workflows & Session Orchestration)
 * **What it does**: The "coordinator". It coordinates user flows (login, logout, deposits, withdrawals, transfers). It maintains the active log-in state (`Session`) and loads/saves data without knowing the core mathematical business rules or console details.
 * **Core Classes**: [AuthServiceImpl](file:///C:/Users/samuel/Documents/repository/personal/dkatalis/atm-cli/src/main/java/io/github/samuelandrian/application/AuthServiceImpl.java), [AtmServiceImpl](file:///C:/Users/samuel/Documents/repository/personal/dkatalis/atm-cli/src/main/java/io/github/samuelandrian/application/AtmServiceImpl.java).
 
-### 3. Domain Layer (Core Business Rules)
+### Domain Layer (Core Business Rules)
 * **What it does**: The "brain" of the bank. It contains pure business calculations (deposits logic, withdrawing logic, debt chronological cascading, and transfer offset balances). This layer has **no dependencies** on terminal readers, console outputs, databases, or frameworks. It is pure Java logic.
 * **Core Classes**: [Customer](file:///C:/Users/samuel/Documents/repository/personal/dkatalis/atm-cli/src/main/java/io/github/samuelandrian/domain/model/Customer.java), [TransferServiceImpl](file:///C:/Users/samuel/Documents/repository/personal/dkatalis/atm-cli/src/main/java/io/github/samuelandrian/domain/service/TransferServiceImpl.java).
 
-### 4. Storage / Infrastructure Layer (Data Memory)
+### Storage / Infrastructure Layer (Data Memory)
 * **What it does**: The "memory". It manages saving and loading customer records. Currently, it stores them in-memory since the application starts fresh on every launch.
 * **Core Classes**: [InMemoryCustomerRepository](file:///C:/Users/samuel/Documents/repository/personal/dkatalis/atm-cli/src/main/java/io/github/samuelandrian/infrastructure/repository/InMemoryCustomerRepository.java).
 
-### 2. Production Database Schema Design (SQL)
+### Production Database Schema Design (SQL)
 In a real-world production banking environment, we separate core customer identity from financial accounts and loans (debts). Below is the recommended relational database schema design (PostgreSQL dialect) to represent this system:
 
 ```sql
