@@ -12,35 +12,23 @@ To build and run this application, you need the following software installed on 
 
 ---
 
-## Submission & Packaging
+## Restoring the Project
 
-This project can be packaged and shared as either a **Git Bundle** (retaining full commit history) or a standard **ZIP Archive**.
+Depending on the format in which this submission was received, you can restore and enter the repository folder using one of the options below:
 
-### 1. Packaging the Project (For the Candidate)
-To package the repository for submission, run one of the following commands in the root directory:
-* **Option A: Create Git Bundle** (preserves commit branches and history):
-  ```bash
-  git bundle create atm-cli.bundle HEAD master
-  ```
-* **Option B: Create ZIP Archive** (exports files at HEAD):
-  ```bash
-  git archive -o atm-cli.zip HEAD
-  ```
+### Option A: From a Git Bundle (.bundle)
+To clone the repository and retain the complete commit history:
+```bash
+git clone atm-cli.bundle -b master atm-cli
+cd atm-cli
+```
 
-### 2. Restoring the Project (For the Reviewer)
-To restore and enter the repository folder depending on the format you received:
-* **Option A: From Git Bundle**:
-  Clone the bundle directly into a new project directory:
-  ```bash
-  git clone atm-cli.bundle -b master atm-cli
-  cd atm-cli
-  ```
-* **Option B: From ZIP Archive**:
-  Unzip the archive and enter the root directory:
-  ```bash
-  unzip atm-cli.zip -d atm-cli
-  cd atm-cli
-  ```
+### Option B: From a ZIP Archive (.zip)
+To extract the raw source files:
+```bash
+unzip atm-cli.zip -d atm-cli
+cd atm-cli
+```
 
 ---
 
