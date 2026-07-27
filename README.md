@@ -26,6 +26,19 @@ To build and run this application, you need the following software installed on 
 
 ---
 
+## Assumptions & Design Choices
+
+To resolve ambiguities in the problem specifications, the following design decisions and assumptions were made:
+
+1. **User Identity (Case-Insensitivity)**: Usernames are treated as case-insensitive (e.g. `login Alice` and `login alice` access the same customer record). This prevents duplicate accounts being created due to accidental capitalization typos.
+2. **Self-Transactions**: Customers are not allowed to perform transactions to themselves (e.g. `transfer Alice 10` when logged in as Alice is rejected with a validation error).
+3. **Transaction Inputs**: All transactional values (deposits, withdrawals, transfers) must be strictly positive numbers. Negative values, zero, or non-numeric strings are rejected gracefully.
+4. **Circular Debt Resolution**: In complex debt loops (e.g., A owes B, B owes C, C owes A), recursive repayment cascading handles this gracefully. When money cycles back to the original payer, it is deposited directly into their balance to resolve the cycle and prevent infinite recursion.
+5. **Thread-Safe Memory**: Although the CLI operates as a single-threaded local terminal, the underlying data repository (`InMemoryCustomerRepository`) utilizes thread-safe collections (`ConcurrentHashMap`). This ensures the storage adapter is ready to be reused in multi-threaded REST/Web environments.
+6. **Transient Storage**: As requested by the test guidelines, the database is in-memory and resets on every fresh launch of the ATM CLI.
+
+---
+
 ## How to Run the Application
 
 You can start the ATM interactive terminal in one of two ways:
